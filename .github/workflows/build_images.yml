@@ -1,4 +1,8 @@
-name: Publish Docker Images
+name: Build & Publish Docker Images
+
+env:
+  BASE_TAG: 'jandi/php-apache'
+
 on:
   push:
     branches:    
@@ -6,7 +10,7 @@ on:
 
 jobs:
   main:
-    name: Build & Push Docker image to Docker Hub
+    name: Build Docker Images
     runs-on: ubuntu-latest
     steps:
       -
@@ -19,13 +23,23 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
       -
-        name: Build PHP 7.4
+        name: Build with PHP 7.4
         id: docker_build_7_4
         uses: docker/build-push-action@v2
         with:
           build-args: FROM_TAG=7.4-apache
           push: true
-          tags: jandi/php-apache:7.4
+          tags: ${{ env.BASE_TAG }}:7.4, ${{ env.BASE_TAG }}:latest
+      -
+        name: Build with PHP 7.3
+        id: docker_build_7_3
+        uses: docker/build-push-action@v2
+        with:
+            build-args: FROM_TAG=7.3-apache
+            push: true
+            tags: ${{ env.BASE_TAG }}:7.4
       -
         name: Image digests
-        run: echo 7.4 {{ steps.docker_build_7_4.outputs.digest }}
+        run: |
+          echo ${{ env.BASE_TAG }}:7.4 ${{ steps.docker_build_7_4.outputs.digest }}
+          echo ${{ env.BASE_TAG }}:7.3 ${{ steps.docker_build_7_3.outputs.digest }}
