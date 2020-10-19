@@ -36,13 +36,13 @@ RUN set -eux; \
     rm composer-setup.php; \
     exit $RESULT
 
-# enable apache modules
+# confige apache
 RUN set -eux; \
     a2enmod rewrite; \
-    a2enmod headers
+    a2enmod headers; \
+    a2enmod remoteip; \
+    rm -r /var/www/html; \
+    mkdir /var/www/public
 
-# change apache document root
-ENV APACHE_DOCUMENT_ROOT /var/www/html/public
-RUN set -eux; \ 
-    sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf; \
-    sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf
+COPY config/default-index.php /var/www/public/index.php
+COPY config/000-default.conf /etc/apache2/sites-available/000-default.conf
