@@ -20,6 +20,10 @@ RUN set -eux; \
         mysqli \
         pdo_mysql 
 
+# confige php
+RUN set -eux; \
+    mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
+
 # install composer
 RUN set -eux; \
     EXPECTED_CHECKSUM="$(wget -q -O - https://composer.github.io/installer.sig)"; \
