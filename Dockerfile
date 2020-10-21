@@ -23,6 +23,7 @@ RUN set -eux; \
 # confige php
 RUN set -eux; \
     mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
+COPY config/php.ini $PHP_INI_DIR/conf.d/000-default.ini
 
 # install composer
 RUN set -eux; \
@@ -47,6 +48,5 @@ RUN set -eux; \
     a2enmod remoteip; \
     rm -r /var/www/html; \
     mkdir /var/www/public
-
-COPY config/default-index.php /var/www/public/index.php
-COPY config/apache-vhost.conf /etc/apache2/sites-available/000-default.conf
+COPY config/index.php /var/www/public/index.php
+COPY config/apache.conf /etc/apache2/sites-available/000-default.conf
