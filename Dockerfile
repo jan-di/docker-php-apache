@@ -47,6 +47,7 @@ RUN set -eux; \
     a2enmod headers; \
     a2enmod remoteip; \
     rm -r /var/www/html; \
-    mkdir -p /var/www/html/public
+    mkdir -p /var/www/html/public /var/www/html_error
 COPY config/index.php /var/www/html/public/index.php
+COPY config/error.php /var/www/html_error/error.php
 COPY config/apache.conf /etc/apache2/sites-available/000-default.conf
