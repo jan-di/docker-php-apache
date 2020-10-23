@@ -52,3 +52,8 @@ RUN set -eux; \
 COPY config/index.php /var/www/html/public/index.php
 COPY config/error.php /var/www/html_error/error.php
 COPY config/apache.conf /etc/apache2/sites-available/000-default.conf
+
+# docker healthcheck
+COPY config/healthcheck.sh /healthcheck.sh
+HEALTHCHECK --interval=60s --timeout=10s --start-period=10s \  
+    CMD sh /healthcheck.sh
