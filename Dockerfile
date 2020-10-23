@@ -24,7 +24,7 @@ RUN set -eux; \
 # confige php
 RUN set -eux; \
     mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
-COPY config/php.ini $PHP_INI_DIR/conf.d/000-default.ini
+COPY files/php.ini $PHP_INI_DIR/conf.d/000-default.ini
 
 # install composer
 RUN set -eux; \
@@ -49,11 +49,11 @@ RUN set -eux; \
     a2enmod remoteip; \
     rm -r /var/www/html; \
     mkdir -p /var/www/html/public /var/www/html_error
-COPY config/index.php /var/www/html/public/index.php
-COPY config/error.php /var/www/html_error/error.php
-COPY config/apache.conf /etc/apache2/sites-available/000-default.conf
+COPY files/index.php /var/www/html/public/index.php
+COPY files/error.php /var/www/html_error/error.php
+COPY files/apache.conf /etc/apache2/sites-available/000-default.conf
 
 # docker healthcheck
-COPY config/healthcheck.sh /healthcheck.sh
+COPY files/healthcheck.sh /healthcheck.sh
 HEALTHCHECK --interval=60s --timeout=10s --start-period=10s \  
     CMD sh /healthcheck.sh
