@@ -5,6 +5,7 @@ FROM php:$FROM_TAG
 # install packages via apt-get
 RUN set -eux; \
 	apt-get update; \
+    apt-get upgrade -y --with-new-pkgs; \
 	apt-get install -y --no-install-recommends \
 		git \
         wget \
