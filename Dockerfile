@@ -8,7 +8,10 @@ RUN set -eux; \
     apt-get upgrade -y --with-new-pkgs; \
 	apt-get install -y --no-install-recommends \
 		git \
+        unzip \
+        vim \
         wget \
+        zip \
 	; \
 	rm -rf /var/lib/apt/lists/*
 
@@ -19,7 +22,8 @@ RUN set -eux; \
         gd \
         intl \
         mysqli \
-        pdo_mysql 
+        pdo_mysql \
+        zip
 
 # confige php
 RUN set -eux; \
@@ -48,10 +52,11 @@ RUN set -eux; \
     a2enmod headers; \
     a2enmod remoteip; \
     rm -r /var/www/html; \
-    mkdir -p /var/www/html/public /var/www/html_error
+    mkdir -p /var/www/html/public /var/www/html_error; \
+    chown -R www-data:www-data /var/www
 COPY files/index.php /var/www/html/public/index.php
 COPY files/error.php /var/www/html_error/error.php
-COPY files/apache.conf /etc/apache2/sites-available/000-default.conf
+COPY files/apache.conf $APACHE_CONFDIR/sites-available/000-default.conf
 
 # docker healthcheck
 COPY files/healthcheck.sh /healthcheck.sh
