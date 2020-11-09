@@ -58,12 +58,6 @@ COPY files/index.php /var/www/html/public/index.php
 COPY files/error.php /var/www/html_error/error.php
 COPY files/apache.conf $APACHE_CONFDIR/sites-available/000-default.conf
 
-# docker healthcheck
-COPY files/healthcheck.sh /healthcheck.sh
-RUN chmod +x /healthcheck.sh
-HEALTHCHECK --interval=60s --timeout=10s --start-period=10s \  
-    CMD /healthcheck.sh
-
 # docker entrypoint
 COPY files/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
