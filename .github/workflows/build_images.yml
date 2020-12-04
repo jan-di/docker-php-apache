@@ -73,13 +73,6 @@ jobs:
             ${{ env.DOCKERHUB_TAG }}:7.3
           cache-from: type=registry,ref=${{ env.GITHUB_TAG }}:7.3${{ steps.cache_buster.outputs.suffix }}
           cache-to: type=inline
-      - name: Push Readme to Dockerhub
-        uses: christian-korneck/update-container-description-action@v1
-        env:
-          DOCKER_USER: ${{ secrets.DOCKERHUB_USERNAME }}
-          DOCKER_PASS: ${{ secrets.DOCKERHUB_PASSWORD }}
-        with:
-          destination_container_repo: ${{ env.DOCKERHUB_TAG }}
       -
         name: Image digests
         run: |
