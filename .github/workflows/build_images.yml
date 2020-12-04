@@ -1,7 +1,8 @@
-name: Build & Publish Docker Images
+name: Build & Push Docker Images
 
 env:
-  BASE_TAG: 'jandi/php-apache'
+  DOCKERHUB_TAG: 'jandi/php-apache'
+  GITHUB_TAG: 'ghcr.io/jan-di/php-apache'
 
 on:
   push:
@@ -19,7 +20,7 @@ jobs:
         name: Create cache buster suffix
         id: cache_buster
         run: |
-          if [ $EVENT_NAME == 'schedule' ]
+          if [ '${{ github.event_name }}' == 'schedule' ]
           then
             echo "Scheduled run. Disable cache."
             echo "::set-output name=suffix::-no-cache"
@@ -27,11 +28,16 @@ jobs:
             echo "Non-scheduled run. Enable cache."
             echo "::set-output name=suffix::"
           fi
-        env:
-          EVENT_NAME: ${{ github.event_name }}
       -
         name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
+      -
+        name: Login to GitHub Container Registry
+        uses: docker/login-action@v1 
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.CR_PAT }}
       - 
         name: Login to DockerHub
         uses: docker/login-action@v1 
@@ -46,9 +52,11 @@ jobs:
           build-args: FROM_TAG=7.4-apache
           push: true
           tags: |
-            ${{ env.BASE_TAG }}:7.4
-            ${{ env.BASE_TAG }}:latest
-          cache-from: type=registry,ref=${{ env.BASE_TAG }}:7.4${{ steps.cache_buster.outputs.suffix }}
+            ${{ env.GITHUB_TAG }}:7.4
+            ${{ env.GITHUB_TAG }}:latest
+            ${{ env.DOCKERHUB_TAG }}:7.4
+            ${{ env.DOCKERHUB_TAG }}:latest
+          cache-from: type=registry,ref=${{ env.GITHUB_TAG }}:7.4${{ steps.cache_buster.outputs.suffix }}
           cache-to: type=inline
       -
         name: Build with PHP 7.3
@@ -58,11 +66,12 @@ jobs:
           build-args: FROM_TAG=7.3-apache
           push: true
           tags: |
-            ${{ env.BASE_TAG }}:7.3
-          cache-from: type=registry,ref=${{ env.BASE_TAG }}:7.3${{ steps.cache_buster.outputs.suffix }}
+            ${{ env.GITHUB_TAG }}:7.3
+            ${{ env.DOCKERHUB_TAG }}:7.3
+          cache-from: type=registry,ref=${{ env.GITHUB_TAG }}:7.3${{ steps.cache_buster.outputs.suffix }}
           cache-to: type=inline
       -
         name: Image digests
         run: |
-          echo ${{ env.BASE_TAG }}:7.4 ${{ steps.docker_build_7_4.outputs.digest }}
-          echo ${{ env.BASE_TAG }}:7.3 ${{ steps.docker_build_7_3.outputs.digest }}
+          echo 7.4 ${{ steps.docker_build_7_4.outputs.digest }}
+          echo 7.3 ${{ steps.docker_build_7_3.outputs.digest }}
