@@ -45,7 +45,9 @@ jobs:
         with:
           build-args: FROM_TAG=7.4-apache
           push: true
-          tags: ${{ env.BASE_TAG }}:7.4, ${{ env.BASE_TAG }}:latest
+          tags: |
+            ${{ env.BASE_TAG }}:7.4
+            ${{ env.BASE_TAG }}:latest
           cache-from: type=registry,ref=${{ env.BASE_TAG }}:7.4${{ steps.cache_buster.outputs.suffix }}
           cache-to: type=inline
       -
@@ -55,7 +57,8 @@ jobs:
         with:
           build-args: FROM_TAG=7.3-apache
           push: true
-          tags: ${{ env.BASE_TAG }}:7.3
+          tags: |
+            ${{ env.BASE_TAG }}:7.3
           cache-from: type=registry,ref=${{ env.BASE_TAG }}:7.3${{ steps.cache_buster.outputs.suffix }}
           cache-to: type=inline
       -
