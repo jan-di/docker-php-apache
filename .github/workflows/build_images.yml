@@ -13,24 +13,18 @@ on:
 
 jobs:
   main:
-    name: Build Docker Images
+    name: Build Docker Image
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        php: ['7.3', '7.4']
+        include:
+        - php: '7.4'
+          latest: true
     steps:
       - 
         name: Checkout Repository
         uses: actions/checkout@v2
-      -
-        name: Create cache buster suffix
-        id: cache_buster
-        run: |
-          if [ '${{ github.event_name }}' == 'schedule' ]
-          then
-            echo "Scheduled run. Disable cache."
-            echo "::set-output name=suffix::-no-cache"
-          else
-            echo "Non-scheduled run. Enable cache."
-            echo "::set-output name=suffix::"
-          fi
       -
         name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
@@ -48,33 +42,45 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
       -
-        name: Build with PHP 7.4
-        id: docker_build_7_4
-        uses: docker/build-push-action@v2
-        with:
-          build-args: FROM_TAG=7.4-apache
-          push: true
-          tags: |
-            ${{ env.GITHUB_TAG }}:7.4
-            ${{ env.GITHUB_TAG }}:latest
-            ${{ env.DOCKERHUB_TAG }}:7.4
-            ${{ env.DOCKERHUB_TAG }}:latest
-          cache-from: type=registry,ref=${{ env.GITHUB_TAG }}:7.4${{ steps.cache_buster.outputs.suffix }}
-          cache-to: type=inline
-      -
-        name: Build with PHP 7.3
-        id: docker_build_7_3
-        uses: docker/build-push-action@v2
-        with:
-          build-args: FROM_TAG=7.3-apache
-          push: true
-          tags: |
-            ${{ env.GITHUB_TAG }}:7.3
-            ${{ env.DOCKERHUB_TAG }}:7.3
-          cache-from: type=registry,ref=${{ env.GITHUB_TAG }}:7.3${{ steps.cache_buster.outputs.suffix }}
-          cache-to: type=inline
-      -
-        name: Image digests
+        name: Set cache buster
+        id: cache_buster
         run: |
-          echo 7.4 ${{ steps.docker_build_7_4.outputs.digest }}
-          echo 7.3 ${{ steps.docker_build_7_3.outputs.digest }}
+          if [ '${{ github.event_name }}' == 'schedule' ]
+          then
+            echo "Scheduled run. Disable cache."
+            echo "::set-output name=suffix::-no-cache"
+          else
+            echo "Non-scheduled run. Enable cache."
+            echo "::set-output name=suffix::"
+          fi
+      -
+        name: Set Docker Tags
+        id: docker_tags
+        run: |
+          TAGS=()
+          TAGS+=(${{ env.GITHUB_TAG }}:${{ matrix.php }})
+          TAGS+=(${{ env.DOCKERHUB_TAG }}:${{ matrix.php }})
+          if [ '${{ matrix.latest }}' == 'true' ]
+          then
+            TAGS+=(${{ env.GITHUB_TAG }}:latest)
+            TAGS+=(${{ env.DOCKERHUB_TAG }}:latest)
+          fi
+          TAG_LIST=$(IFS=,; printf '%s' "${TAGS[*]}")
+
+          echo "Image tags:"
+          printf -- '- %s\n' "${TAGS[@]}"
+          echo "::set-output name=tags::$TAG_LIST"
+      -
+        name: Build & Push Docker Image
+        id: docker_build
+        uses: docker/build-push-action@v2
+        with:
+          build-args: FROM_TAG=${{ matrix.php }}-apache
+          push: true
+          tags: ${{ steps.docker_tags.outputs.tags }}
+          cache-from: type=registry,ref=${{ env.GITHUB_TAG }}:${{ matrix.php }}${{ steps.cache_buster.outputs.suffix }}
+          cache-to: type=inline
+      -
+        name: Image digest
+        run: |
+          echo ${{ matrix.php }} ${{ steps.docker_build.outputs.digest }}
