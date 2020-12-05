@@ -8,5 +8,6 @@ This is an extension of the official [php:*-apache](https://hub.docker.com/_/php
 
 `ghcr.io/jan-di/php-apache` [View at GitHub Container Registry](https://github.com/users/jan-di/packages/container/package/php-apache)
 
+- `8.0`
 - `7.4`, `latest`
 - `7.3`
