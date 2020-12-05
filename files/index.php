@@ -1,3 +1,7 @@
+<?php
+    // just a place holder to check if php code is executed successfully
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 
